@@ -1,0 +1,4 @@
+127.0.0.1 localhost
+10.13.34.11 kdocs.cn    www.kdocs.cn
+#注释
+#10.13.234.115 kdocs.cn

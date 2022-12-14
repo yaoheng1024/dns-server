@@ -1,0 +1,29 @@
+{
+  "name": "dns-server",
+  "version": "0.0.1",
+  "description": "a simple dns server",
+  "main": "index.js",
+  "bin": {
+    "dns-server": "./bin/start.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AuzureBlu/dns-server.git"
+  },
+  "keywords": [
+    "dns",
+    "server"
+  ],
+  "author": "AuzureBlu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AuzureBlu/dns-server/issues"
+  },
+  "homepage": "https://github.com/AuzureBlu/dns-server#readme",
+  "dependencies": {
+    "dns-packet": "^5.4.0"
+  }
+}
