@@ -1,6 +1,6 @@
 const CustomHostManager = require("./src/customHostManager");
 const { getCustomArgs, getIPaddress } = require('./src/helpers');
-const dnsPacket = require('dns-packet');
+const { getResponseBuffer, parseRequestBuffer } = require('./lib/dns-proxy-server/index');
 
 const dgram = require("dgram");
 const dns = require("dns");
@@ -20,54 +20,35 @@ exports.setupServer = async function setupServer() {
     await customHostManager.parseHostFromPath(hostFilePath);
   }
   const server = dgram.createSocket("udp4");
-  server.send
   server.on("message", function (msg, rinfo) {
-    console.log(rinfo);
     const clientAddr = rinfo.address || rinfo.host;
     const clientPort = rinfo.port;
-    const request = dnsPacket.decode(msg);
-    const domain = request.questions[0].name;
+    const request = parseRequestBuffer(msg);
+    const { domain } = request;
+
+    function response(addresses, ttl = 1) {
+      const responseBuf = getResponseBuffer(request, ttl, addresses);
+      server.send(responseBuf, clientPort, clientAddr);
+      console.log(`${domain} ${addresses}`);
+    }
     if (customHostManager && customHostManager.hasDomainIpAddress(domain)) {
-      
+      const ip = customHostManager.getDomainIpAddress(domain);
+      response(ip);
     } else {
       dns.lookup(domain, function (err, address, family) {
         if (address) {
-          console.log("address: ", address, rq.domain);
-          return rs(rq, 1, address);
+          response(address);
         } else {
           dns.resolve4(domain, function (error, addresses) {
             console.log("dns resolve4 server...");
-            if (addresses) {
-              return console.log("missing...", rq.domain);
+            if (!addresses) {
+              return console.log("missing...", domain);
             }
-            console.log("address[net]: ", addresses, rq.domain);
-            return rs(rq, 30, addresses);
+            response(addresses, 30);
           });
         }
       });
     }
-    // {
-    //   id: 36668,
-    //   type: 'query',
-    //   flags: 256,
-    //   flag_qr: false,
-    //   opcode: 'QUERY',
-    //   flag_aa: false,
-    //   flag_tc: false,
-    //   flag_rd: true,
-    //   flag_ra: false,
-    //   flag_z: false,
-    //   flag_ad: false,
-    //   flag_cd: false,
-    //   rcode: 'NOERROR',
-    //   questions: [ { name: 'resolver.msg.xiaomi.net', type: 'A', class: 'IN' } ],
-    //   answers: [],
-    //   authorities: [],
-    //   additionals: []
-    // }
-    // const rq = request(msg),
-    //   rs = respond(rinfo);
-    
   });
   server.on("error", function (err) {
     console.log("server error: ", err.stack);
@@ -78,5 +59,3 @@ exports.setupServer = async function setupServer() {
   });
   server.bind({ port: port || 53, address: ipAddr });
 }
-
-
