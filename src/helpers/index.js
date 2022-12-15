@@ -1,4 +1,6 @@
-function getCustomArgs() {
+const os = require("os");
+
+exports.getCustomArgs = () => {
   const extraArgs = process.argv.slice(2);
   const args = {};
   let currentKey;
@@ -15,7 +17,7 @@ function getCustomArgs() {
   return args;
 }
 
-function getIPaddress() {
+exports.getIPaddress = () => {
   let ip;
   const networkInfo = os.networkInterfaces();
   for (const key in networkInfo) {
